@@ -189,7 +189,7 @@ static void AllocFreeAut (void)
 	}
 }
 
-[[call("ScriptS"), script("open")]]
+[[call("ScriptS"), script("open"), alloc_Aut(0)]]
 static void AllocTimeSet(void)
 {
    if(!ACS_Timer())
