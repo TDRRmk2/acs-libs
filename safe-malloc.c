@@ -23,7 +23,7 @@ enum
 {
 	// The last 65536 words are used for extra script parameters, so
 	// let's avoid those.
-	HEAP_START = 0x7FFFFFFF - 65536
+	HEAP_START = 0xFFFEFFFF
 };
 
 typedef struct AllocBlock
