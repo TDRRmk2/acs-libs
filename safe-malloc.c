@@ -153,7 +153,7 @@ void *s_realloc (register void *oldPtr, register size_t size)
 	
 	register AllocBlockT *oldBlock = PTR_TO_BLOCK(oldPtr);
 	
-	if(size >= oldBlock->size)
+	if(oldBlock->size >= size)
 		return oldPtr;
 	
 	register void *ptr = s_malloc(size);
