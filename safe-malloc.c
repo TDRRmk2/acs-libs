@@ -1,6 +1,6 @@
 /*
 	GNU Lesser General Public License version 2.1
-	Copyright (C) 2023 Moises Aguirre "TDRR"
+	Copyright (C) 2025 Moises Aguirre "TDRR"
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU Lesser General Public
@@ -16,8 +16,10 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-#define BLOCK_TO_PTR(ptr) ((void*)(((char*)ptr) + sizeof(AllocBlockT)))
-#define PTR_TO_BLOCK(ptr) ((AllocBlockT*)(((char*)ptr) - sizeof(AllocBlockT)))
+#include "safe-malloc.h"
+
+#define BLOCK_TO_PTR(ptr) ((void SM_SPC *)(((char SM_SPC *)ptr) + sizeof(AllocBlockT)))
+#define PTR_TO_BLOCK(ptr) ((AllocBlockT SM_SPC *)(((char SM_SPC *)ptr) - sizeof(AllocBlockT)))
 
 enum
 {
@@ -28,7 +30,7 @@ enum
 
 typedef struct AllocBlock
 {
-	struct AllocBlock *next;
+	struct AllocBlock SM_SPC *next;
 	size_t size; // we only really need 31-bits unsigned anyway
 	bool used : 1;
 	bool autBlock : 2;
@@ -38,21 +40,22 @@ typedef struct
 {
 	bool init;
 	int allocTime;
-	AllocBlockT *tail, *lastFreed;
+	AllocBlockT SM_SPC *tail;
+	AllocBlockT SM_SPC *lastFreed;
 } HeapHeadT;
 
 [[call("StkCall")]]
-void *s_malloc (register size_t size)
+void SM_SPC *s_malloc (register size_t size)
 {
-	register HeapHeadT *head = (void*)(((char*)HEAP_START) - sizeof(*head));
-	register AllocBlockT *block;
+	register HeapHeadT SM_SPC *head = (void SM_SPC *)(((char SM_SPC *)HEAP_START) - sizeof(*head));
+	register AllocBlockT SM_SPC *block;
 	
 	if(!head->init)
 	{	
 		head->init = true;
 		head->lastFreed = NULL;
 		
-		block = (void*)(((char*)head) - (size + sizeof(*block) - 1));
+		block = (void SM_SPC *)(((char SM_SPC *)head) - (size + sizeof(*block) - 1));
 		
 		block->autBlock = false;
 		block->used = true;
@@ -78,7 +81,7 @@ void *s_malloc (register size_t size)
 		// We should split off the block here (4 words is the minimum useful allocation).
 		if((block->size - size) >= (sizeof(*block) + 4))
 		{	
-			AllocBlockT *splitBlock = (void*)(((char*)block) + size + sizeof(*block));
+			AllocBlockT SM_SPC *splitBlock = (void SM_SPC *)(((char SM_SPC *)block) + size + sizeof(*block));
 			
 			splitBlock->used = false;
 			splitBlock->autBlock = false;
@@ -101,7 +104,7 @@ void *s_malloc (register size_t size)
 	} while((block = block->next));
 		
 	// No acceptable blocks found, so let's "grow" the heap.
-	block = (void*)(((char*)head->tail) - (sizeof(*block) + size));
+	block = (void SM_SPC *)(((char SM_SPC *)head->tail) - (sizeof(*block) + size));
 	
 	#ifdef DEBUG_MODE
 		ACS_BeginPrintBold(); ACS_PrintString(s"Grew the heap for block "); ACS_PrintHex((int)block); ACS_EndPrintBold();
@@ -117,12 +120,12 @@ void *s_malloc (register size_t size)
 }
 
 [[call("StkCall")]]
-void s_free (register void *ptr)
+void s_free (register void SM_SPC *ptr)
 {
 	if(!ptr)
 		return;
 	
-	register AllocBlockT *block = PTR_TO_BLOCK(ptr);
+	register AllocBlockT SM_SPC *block = PTR_TO_BLOCK(ptr);
 	
 	// Should merge blocks here.
 	if( (block->next) && (!block->next->used) )
@@ -140,7 +143,7 @@ void s_free (register void *ptr)
 }
 
 [[call("StkCall")]]
-void *s_realloc (register void *oldPtr, register size_t size)
+void SM_SPC *s_realloc (register void SM_SPC *oldPtr, register size_t size)
 {
 	if(!oldPtr)
 		return (size) ? s_malloc(size) : NULL;
@@ -151,15 +154,15 @@ void *s_realloc (register void *oldPtr, register size_t size)
 		return NULL;
 	}
 	
-	register AllocBlockT *oldBlock = PTR_TO_BLOCK(oldPtr);
+	register AllocBlockT SM_SPC *oldBlock = PTR_TO_BLOCK(oldPtr);
 	
 	if(oldBlock->size >= size)
 		return oldPtr;
 	
-	register void *ptr = s_malloc(size);
+	register void SM_SPC *ptr = s_malloc(size);
 	
 	for(int i = 0; i < oldBlock->size; i++)
-		((char*)ptr)[i] = ((char*)oldPtr)[i];
+		((char SM_SPC *)ptr)[i] = ((char SM_SPC *)oldPtr)[i];
 	
 	s_free(oldPtr);
 	
@@ -167,11 +170,11 @@ void *s_realloc (register void *oldPtr, register size_t size)
 }
 
 [[call("StkCall")]]
-void *s_calloc (register size_t nmemb, register size_t size)
+void SM_SPC *s_calloc (register size_t nmemb, register size_t size)
 {
-	register char *ptr = s_malloc(size *= nmemb);
+	register char SM_SPC *ptr = s_malloc(size *= nmemb);
 	
-	for(register char *iter = ptr; size--;)
+	for(register char SM_SPC *iter = ptr; size--;)
 		*iter++ = 0;
 	
 	return ptr;
@@ -180,7 +183,7 @@ void *s_calloc (register size_t nmemb, register size_t size)
 [[call("StkCall")]]
 static void AllocFreeAut (void)
 {
-	register AllocBlockT *block = ((HeapHeadT*)(((char*)HEAP_START) - sizeof(HeapHeadT)))->tail;
+	register AllocBlockT SM_SPC *block = ((HeapHeadT SM_SPC *)(((char SM_SPC *)HEAP_START) - sizeof(HeapHeadT)))->tail;
 	
 	while((block = block->next))
 	{
@@ -196,30 +199,30 @@ static void AllocTimeSet(void)
       ACS_Delay(1);
 
    if(ACS_Timer() == 1)
-      ((HeapHeadT*)(((char*)HEAP_START) - sizeof(HeapHeadT)))->allocTime = 1;
+      ((HeapHeadT SM_SPC *)(((char SM_SPC *)HEAP_START) - sizeof(HeapHeadT)))->allocTime = 1;
 }
 
 // AFAICT this function is essentially just realloc so I'll simply call s_realloc for it.
 // I *think* this is only called by libc. This also means the libc functions are already
 // using the new allocator but we also need to account for anyone not using libc at all (me).
 [[call("StkCall")]]
-void *__GDCC__alloc (register void *oldPtr, size_t size)
+void SM_SPC *__GDCC__alloc (register void SM_SPC *oldPtr, size_t size)
 {
 	return s_realloc(oldPtr, size);
 }
 
 // Internal functions called by GDCC for allocating/freeing the auto stack for every script.
 [[call("StkCall")]]
-void *__GDCC__Plsa(register unsigned int size)
+void SM_SPC *__GDCC__Plsa(register unsigned int size)
 {
-	register int *allocTime = &((HeapHeadT*)(((char*)HEAP_START) - sizeof(HeapHeadT)))->allocTime;
+	register int SM_SPC *allocTime = &((HeapHeadT SM_SPC *)(((char SM_SPC *)HEAP_START) - sizeof(HeapHeadT)))->allocTime;
 	
 	// [DavidPH] Check if a new hub was entered. If so, free automatic storage.
 	if(*allocTime > ACS_Timer())
 		AllocFreeAut();
 	*allocTime = ACS_Timer();
 	
-	register AllocBlockT *ptr = s_malloc(size);
+	register AllocBlockT SM_SPC *ptr = s_malloc(size);
 	
 	PTR_TO_BLOCK(ptr)->autBlock = true;
 	
@@ -227,7 +230,7 @@ void *__GDCC__Plsa(register unsigned int size)
 }
 
 [[call("StkCall")]]
-void __GDCC__Plsf(void *ptr)
+void __GDCC__Plsf(void SM_SPC *ptr)
 {
 	s_free(ptr);
 }
@@ -236,7 +239,7 @@ void __GDCC__Plsf(void *ptr)
 [[call("StkCall")]]
 void __GDCC__alloc_dump(void)
 {
-	register AllocBlockT *block = ((HeapHeadT*)(((char*)HEAP_START) - sizeof(HeapHeadT)))->tail;
+	register AllocBlockT SM_SPC *block = ((HeapHeadT SM_SPC *)(((char SM_SPC *)HEAP_START) - sizeof(HeapHeadT)))->tail;
 	
 	if(!block)
 		return;
