@@ -1,6 +1,44 @@
 # acs-libs
 A collection of Zandronum ACS libraries. Mainly GDCC.
 
+## paketlib
+A library for Zandronum written in plain ACS (BCS and GDCC headers coming at a later date) that allows creating packets, sending and reading them over the network very easily.
+As an example:
+```c
+Script "lol" OPEN
+{
+	str p = Packet_New();
+	
+	p = Packet_Append(p, 1122334499, PACKET_WORD);
+	p = Packet_Append(p, 0, PACKET_WORD);
+	p = Packet_AppendStr(p, "This is a test");
+	p = Packet_Append(p, 13.5, PACKET_WORD);
+	
+	Packet_Send("ClientReceivePacket", p, -1);
+}
+
+Script "ClientReceivePacket" (int p) CLIENTSIDE
+{
+	p = Packet_Read(p, PACKET_WORD);
+	int i1 = Packet_Rval;
+	
+	p = Packet_Read(p, PACKET_WORD);
+	int i2 = Packet_Rval;
+	
+	p = Packet_ReadStr(p);
+	str s = Packet_Rval;
+	
+	p = Packet_Read(p, PACKET_WORD);
+	int f = Packet_Rval;
+
+	Log(i:i1);
+	Log(i:i2);
+	Log(s:s);
+	Log(f:f);
+}
+```
+It's decently light on bandwidth usage as well. Overhead is a mere 1 extra byte for each 8-32bit integer/fixed point number/bool, and only 3 extra bytes for an entire string.
+
 ## ACS_Common
 A header for GDCC meant to simplify writing code without `libGDCC` and `libc`, and for code intended to be ported from ACC/BCC. It does the following:
 * Enables ACS strings by default, and defines a `str` alias to them.
