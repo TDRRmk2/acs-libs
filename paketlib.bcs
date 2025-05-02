@@ -1,0 +1,23 @@
+#ifdef __IMPORTED__
+	#error This file must be #included.
+#endif
+
+#linklibrary "paketlib"
+
+enum
+{
+	PACKET_WORD,
+	PACKET_SHORT,
+	PACKET_BYTE
+};
+
+extern raw Packet_Rval;
+
+extern int Packet_GetMaxSize (void);
+extern int Packet_GetSize (str pac);
+extern str Packet_New (void);
+extern str Packet_Append (str pac, raw val, int width = PACKET_WORD);
+extern str Packet_AppendStr (str pac, str val);
+extern int Packet_Send (str scrip, str pac, int client = -1);
+extern str Packet_Read (str pac, int width = PACKET_WORD);
+extern str Packet_ReadStr (str pac);
