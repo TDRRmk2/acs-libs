@@ -4,7 +4,7 @@
 #libdefine PACKET_WORD 0 // not "int" because technically fixed and single floats can go here too, and this is talking about width
 #libdefine PACKET_SHORT 1
 #libdefine PACKET_BYTE 2
-#libdefine PACKET_TOTAL 3 //not an actual width
+#define PACKET_TOTAL 3 //not an actual width
 
 #define PACKET_NATIVE_HEADER_SIZE 13
 int Packet_Rval; // raw type
@@ -19,6 +19,21 @@ function int __Packet_ReadUnsignedByte (str pac, int pos)
 		b += 256;
 
 	return b;
+}
+
+function int Packet_GetMaxSize (void)
+{
+	int maxPacketSize = GetCVar("sv_maxpacketsize");
+
+	if(maxPacketSize > 2048)
+		return 2048;
+
+	return maxPacketSize;
+}
+
+function int Packet_GetSize (str pac)
+{
+	return StrLen(pac) + PACKET_NATIVE_HEADER_SIZE;
 }
 
 // Does nothing currently, but it might be needed in the future.
@@ -78,10 +93,7 @@ function str Packet_AppendStr (str pac, str val)
 // int Packet_Send (str script, str pac, int client = -1)
 function int Packet_Send (str scrip, str pac, int client)
 {
-	int maxPacketSize = GetCVar("sv_maxpacketsize"), packetSize = StrLen(pac) + PACKET_NATIVE_HEADER_SIZE;
-	
-	if(maxPacketSize > 2048)
-		maxPacketSize = 2048;
+	int maxPacketSize = Packet_GetMaxSize(), packetSize = Packet_GetSize(pac);
 	
 	if(packetSize > maxPacketSize)
 	{
@@ -135,7 +147,7 @@ function int Packet_Read (str pac, int width)
 }
 
 // raw Packet_ReadStr(str pac)
-function int Packet_ReadStr(str pac)
+function int Packet_ReadStr (str pac)
 {
 	int len;
 	pac = Packet_Read(pac, PACKET_WORD);
