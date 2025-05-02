@@ -1,8 +1,8 @@
 # acs-libs
-A collection of Zandronum ACS libraries. Mainly GDCC.
+A collection of Zandronum ACS libraries. Mainly GDCC's C front.
 
 ## paketlib
-A library for Zandronum written in plain ACS (BCS and GDCC headers coming at a later date) that allows creating packets, sending and reading them over the network very easily.
+A library for Zandronum written in plain ACS (BCS and C headers to use the enhanced language features are available, too) that allows creating packets, sending and reading them over the network very easily.
 As an example:
 ```c
 Script "lol" OPEN
