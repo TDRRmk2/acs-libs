@@ -57,7 +57,7 @@ function str Packet_Append (str pac, int val, int width)
 		case PACKET_BYTE: max = 1; break;
 	}
 	
-	Log(s:"==__Packet_Tmp==");
+	//Log(s:"==__Packet_Tmp==");
 	for(int i = 0; i < max; i++)
 	{
 		tmp = val & 0xFF;
@@ -66,17 +66,17 @@ function str Packet_Append (str pac, int val, int width)
 		{
 			zeroChar |= 1 << i;
 			tmp = 0xFF;
-			Log(s:"zero byte");
+			//Log(s:"zero byte");
 		}
 
-		Log(x:tmp);
+		//Log(x:tmp);
 
 		__Packet_Tmp[i] = tmp;
 
 		val >>= 8;
 	}
 
-	Log(a:(__Packet_Tmp, 0, max));
+	//Log(a:(__Packet_Tmp, 0, max));
 
 	return StrParam(s:pac, c:zeroChar, a:(__Packet_Tmp, 0, max));
 }
@@ -84,7 +84,7 @@ function str Packet_Append (str pac, int val, int width)
 function str Packet_AppendStr (str pac, str val)
 {
 	val = StrLeft(val, 2048);
-	Log(s:"strlen = ", i:StrLen(val));
+	//Log(s:"strlen = ", i:StrLen(val));
 	pac = Packet_Append(pac, StrLen(val), PACKET_WORD);
 	
 	return StrParam(s:pac, s:val);
@@ -129,7 +129,7 @@ function int Packet_Read (str pac, int width)
 	
 	Packet_Rval = 0;
 
-	Log(s:"==packet_rval==");
+	//Log(s:"==packet_rval==");
 	for(int i = 0; i < max; i++)
 	{
 		Packet_Rval >>= 8;
@@ -140,7 +140,7 @@ function int Packet_Read (str pac, int width)
 			Packet_Rval |= __Packet_ReadUnsignedByte(pac, i + 1) << shiftAmount;
 		}
 
-		Log(x:Packet_Rval);
+		//Log(x:Packet_Rval);
 	}
 	
 	return StrMid(pac, max + 1, 0x7FFFFFFF);
@@ -153,7 +153,7 @@ function int Packet_ReadStr (str pac)
 	pac = Packet_Read(pac, PACKET_WORD);
 	len = Packet_Rval;
 
-	Log(s:"strlen = ", i:len);
+	//Log(s:"strlen = ", i:len);
 	
 	Packet_Rval = StrLeft(pac, len);
 	
