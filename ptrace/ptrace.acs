@@ -49,14 +49,14 @@ Script "__PTrace_Puff_GetDistance" (int x, int y, int z)
     }
     else
     {
-        Log(s:GetActorClass(0));
+        //Log(s:GetActorClass(0));
         PTrace_Data[PTRACE_DISTANCE] = VLength3d(PTrace_Data[PTRACE_POS_X] - GetActorX(0), PTrace_Data[PTRACE_POS_Y] - GetActorY(0), PTrace_Data[PTRACE_POS_Z] - GetActorZ(0));
     }
 }
 
 Script "__PTrace_Puff_Handler" (int type)
 {
-    Log(s:"Handler called: ", i:type);
+    //Log(s:"Handler called: ", i:type);
     PTrace_Data[PTRACE_HIT] = type;
     PTrace_Data[PTRACE_POS_X] = GetActorX(0);
     PTrace_Data[PTRACE_POS_Y] = GetActorY(0);
@@ -87,7 +87,7 @@ function void PTrace (int tid, int angle, int distance, int pitch, int flags, in
     int x, y, z;
     bool oldShootable = CheckFlag(tid, "SHOOTABLE");
 
-    Log(s:"PTrace(", i:tid, c:',', f:angle, c:',', f:distance, c:',', f:pitch, c:',', i:flags, c:',', f:offsetz, c:',', f:offsetfw, c:',', f:offsetside, s:")");
+    //Log(s:"PTrace(", i:tid, c:',', f:angle, c:',', f:distance, c:',', f:pitch, c:',', i:flags, c:',', f:offsetz, c:',', f:offsetfw, c:',', f:offsetside, s:")");
 
     __PTrace_SetShootable(tid, false);
 
@@ -121,20 +121,9 @@ function void PTrace (int tid, int angle, int distance, int pitch, int flags, in
     // Do a second trace to get the coordinates (yes this could be done with pure math but might as well let the engine do it for max accuracy)
     if(PTrace_Data[PTRACE_HIT] == PTRACE_HIT_NONE)
         LineAttack(tid, angle, pitch, 0, "PTrace_Puff_Air", "None", distance, FHF_NORANDOMPUFFZ|FHF_NOIMPACTDECAL);
-    Log(s:"Done with shots");
+    //Log(s:"Done with shots");
 
     Thing_Remove(helperTID);
 
     __PTrace_SetShootable(tid, oldShootable);
-}
-
-Script "checktrace" (void)
-{
-    Log(s:"PTrace_Data");
-    Log(i:PTrace_Data[PTRACE_HIT]);
-    Log(f:PTrace_Data[PTRACE_POS_X]);
-    Log(f:PTrace_Data[PTRACE_POS_Y]);
-    Log(f:PTrace_Data[PTRACE_POS_Z]);
-    Log(i:PTrace_Data[PTRACE_ACTOR_HIT]);
-    Log(f:PTrace_Data[PTRACE_DISTANCE]);
 }
