@@ -2,6 +2,7 @@
 A collection of Zandronum ACS libraries. Some
 
 ## ptrace
+### NOTE: decorate.ptrace is required for proper functionality.
 A pseudo-linetrace library. Much like ZScript's `linetrace` or QuakeC's `trace`, allows tracing a hitscan line, and get information about it. Things like where the trace ended (can be in mid-air, even), if it hit anything, the total distance between the start and end of the trace and a temporary (1-tic) TID to whatever actor it hit, if any.
 All information is returned in `PTrace_Data` after calling the `PTrace` function. In ACC, it's accessed as follows:
 ```
