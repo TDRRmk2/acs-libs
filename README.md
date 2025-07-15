@@ -1,5 +1,23 @@
 # acs-libs
-A collection of Zandronum ACS libraries. Mainly GDCC's C front.
+A collection of Zandronum ACS libraries. Some
+
+## ptrace
+A pseudo-linetrace library. Much like ZScript's `linetrace` or QuakeC's `trace`, allows tracing a hitscan line, and get information about it. Things like where the trace ended (can be in mid-air, even), if it hit anything, the total distance between the start and end of the trace and a temporary (1-tic) TID to whatever actor it hit, if any.
+All information is returned in `PTrace_Data` after calling the `PTrace` function. In ACC, it's accessed as follows:
+```
+PTrace_Data[PTRACE_HIT]
+PTrace_Data[PTRACE_POS_X] // y and z as well
+PTrace_Data[PTRACE_HIT_ACTOR]
+PTrace_Data[PTRACE_DISTANCE]
+```
+In BCC and GDCC (both fronts), there's headers available, which allow for much nicer access as a struct, as well as proper type support:
+```
+PTrace_Data.hitType
+PTrace_Data.posX // y and z as well again
+PTrace_Data.hitActor
+PTrace_Data.distance
+```
+Note that all necessary information must be retrieved immediately after calling the function. Subsequent calls to `PTrace` will overwrite this struct, and `Delay`s also risk the same thing (and after a single tic the hit actor TID will be invalidated).
 
 ## paketlib
 A library for Zandronum written in plain ACS (BCS and C headers to use the enhanced language features are available, too) that allows creating packets, sending and reading them over the network very easily.
@@ -51,9 +69,6 @@ A header for GDCC meant to simplify writing code without `libGDCC` and `libc`, a
 
 **Remember to rename both** `modprefix_sta` **ocurrences to fit your project.**
 
-## safe-malloc
-A replacement for libGDCC aimed at simplifying mod interop/compatiblity. Performs memory allocation always starting from near the very top of the address space. Other copies of safe-malloc can coexist without issue since they're all aligned, and regular ACS mods using the same global array are very unlikely to run into any conflicts.
-
 ## actorlib
 A library making use of GDCC's struct properties to provide an `ActorT` struct that can call many functions in a more seamless way. For example:
 ```c
@@ -72,3 +87,7 @@ self.giveInv("Shotgun", 1);
 self.health = 150;
 self.viewHeight = self.height - 2.0;
 ```
+
+## safe-malloc
+### DEPRECATED, NO LONGER NECESSARY WITH CURRENT LIBGDCC
+A replacement for libGDCC aimed at simplifying mod interop/compatiblity. Performs memory allocation always starting from near the very top of the address space. Other copies of safe-malloc can coexist without issue since they're all aligned, and regular ACS mods using the same global array are very unlikely to run into any conflicts.
