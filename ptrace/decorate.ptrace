@@ -1,0 +1,77 @@
+// Pseudo LineTrace library: DECORATE helper code
+
+Actor PTrace_Helper
+{
+    +NOINTERACTION
+    +NOBLOCKMAP
+    +NOGRAVITY
+    +INVISIBLE
+    RenderStyle None
+    Radius 0
+    Height 0
+
+    states
+    {
+    Spawn:
+        TNT1 A -1
+        Stop
+    }
+}
+
+Actor PTrace_Puff
+{
+    +BLOODLESSIMPACT
+    +PUFFGETSOWNER
+    +PUFFONACTORS
+    +MTHRUSPECIES
+    +NOBLOCKMAP
+    +NOGRAVITY
+    +HITTRACER
+    //RenderStyle None
+
+    states
+    {
+    Spawn:
+    XDeath:
+        BON1 A 0 NoDelay ACS_NamedExecuteWithResult("__PTrace_Puff_Handler", 2)
+        Stop
+
+    Crash:
+        BON1 A 0 ACS_NamedExecuteWithResult("__PTrace_Puff_Handler", 1)
+        Stop
+    }
+}
+
+Actor PTrace_Puff_Air : PTrace_Puff
+{
+    +ALWAYSPUFF
+
+    states
+    {
+    Crash:
+        BON1 A 0 ACS_NamedExecuteWithResult("__PTrace_Puff_Handler", 0)
+        Stop
+    }
+}
+
+Actor PTrace_SHOOTABLE_0 : CustomInventory
+{
+    +INVENTORY.AUTOACTIVATE
+
+    states
+    {
+    Use:
+        TNT1 A 0 A_ChangeFlag("SHOOTABLE", false)
+        Stop
+    }
+}
+
+Actor PTrace_SHOOTABLE_1 : PTrace_SHOOTABLE_0
+{
+    states
+    {
+    Use:
+        TNT1 A 0 A_ChangeFlag("SHOOTABLE", true)
+        Stop
+    }
+}

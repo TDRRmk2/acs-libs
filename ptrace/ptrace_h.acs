@@ -1,0 +1,35 @@
+// GDCC-ACC header (must be #imported)
+#library "ptrace"
+
+enum
+{
+    PTRACE_HIT_NONE,
+    PTRACE_HIT_MAP,
+    PTRACE_HIT_ACTOR,
+    PTRACE_HIT_TOTAL
+}
+
+enum
+{
+    PTRF_ABSPOSITION = 1,
+    PTRF_ABSOFFSET = 2,
+    PTRF_THRUSPECIES = 4
+}
+
+struct PTrace_DataStruct
+{
+    int hitType;
+    fixed posX;
+    fixed posY;
+    fixed posZ;
+    int hitActor;
+    fixed distance;
+}
+
+PTrace_DataStruct PTrace_Data[1];
+
+function void PTrace (int tid, fixed angle, fixed distance, fixed pitch, int flags, fixed offsetz, fixed offsetfw, fixed offsetside) {}
+
+#pragma define raw on
+
+#libdefine PTrace_Data PTrace_Data[0]

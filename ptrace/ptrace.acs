@@ -1,0 +1,140 @@
+#library "ptrace"
+#include "zcommon.acs"
+
+#libdefine PTRACE_HIT_NONE 0
+#libdefine PTRACE_HIT_MAP 1
+#libdefine PTRACE_HIT_ACTOR 2
+#libdefine PTRACE_HIT_TOTAL 3
+
+#libdefine PTRF_ABSPOSITION 1
+#libdefine PTRF_ABSOFFSET 2
+#libdefine PTRF_THRUSPECIES 4
+
+#libdefine PTRACE_HIT 0
+#libdefine PTRACE_POS_X 1
+#libdefine PTRACE_POS_Y 2
+#libdefine PTRACE_POS_Z 3
+#libdefine PTRACE_ACTOR_HIT 4
+#libdefine PTRACE_DISTANCE 5
+#libdefine LENGTHOF_PTRACE 6
+
+int PTrace_Data[6];
+
+// Internal use
+function void __PTrace_SetShootable (int tid, bool e)
+{
+    str item = StrParam(s:"PTrace_SHOOTABLE_", i:e);
+    if(tid)
+    {
+        GiveActorInventory(tid, item, 1);
+    }
+    else
+    {
+        GiveInventory(item, 1);
+    }
+}
+
+function int VLength3d(int x, int y, int z)
+{
+	int len = VectorLength(x, y);
+	len = VectorLength(z, len);
+	return len;
+}
+
+Script "__PTrace_Puff_GetDistance" (int x, int y, int z)
+{
+    if(!SetActivator(0, AAPTR_Target))
+    {
+        PTrace_Data[PTRACE_DISTANCE] = 0;
+    }
+    else
+    {
+        Log(s:GetActorClass(0));
+        PTrace_Data[PTRACE_DISTANCE] = VLength3d(PTrace_Data[PTRACE_POS_X] - GetActorX(0), PTrace_Data[PTRACE_POS_Y] - GetActorY(0), PTrace_Data[PTRACE_POS_Z] - GetActorZ(0));
+    }
+}
+
+Script "__PTrace_Puff_Handler" (int type)
+{
+    Log(s:"Handler called: ", i:type);
+    PTrace_Data[PTRACE_HIT] = type;
+    PTrace_Data[PTRACE_POS_X] = GetActorX(0);
+    PTrace_Data[PTRACE_POS_Y] = GetActorY(0);
+    PTrace_Data[PTRACE_POS_Z] = GetActorZ(0);
+    ACS_NamedExecuteWithResult("__PTrace_Puff_GetDistance", GetActorX(0), GetActorY(0), GetActorZ(0));
+
+    if(SetActivator(0, AAPTR_Tracer))
+    {
+        int tid = UniqueTID(), oldTID = ActivatorTID();
+
+        PTrace_Data[PTRACE_ACTOR_HIT] = tid;
+        Thing_ChangeTID(0, tid);
+
+        Delay(const:1);
+
+        Thing_ChangeTID(0, oldTID);
+    }
+    else
+    {
+        PTrace_Data[PTRACE_ACTOR_HIT] = 0;
+    }
+}
+
+// Only truly public function, actually does the trace
+function void PTrace (int tid, int angle, int distance, int pitch, int flags, int offsetz, int offsetfw, int offsetside)
+{
+    int helperTID = UniqueTID(), refAngle = GetActorAngle(tid);
+    int x, y, z;
+    bool oldShootable = CheckFlag(tid, "SHOOTABLE");
+
+    Log(s:"PTrace(", i:tid, c:',', f:angle, c:',', f:distance, c:',', f:pitch, c:',', i:flags, c:',', f:offsetz, c:',', f:offsetfw, c:',', f:offsetside, s:")");
+
+    __PTrace_SetShootable(tid, false);
+
+    PTrace_Data[PTRACE_HIT] = PTRACE_HIT_NONE;
+
+    if(flags & PTRF_ABSPOSITION)
+    {
+        x = offsetfw;
+        y = offsetside;
+        z = offsetz;
+    }
+    else if(flags & PTRF_ABSOFFSET)
+    {
+        x = GetActorX(tid) + offsetfw;
+        y = GetActorY(tid) + offsetside;
+        z = GetActorZ(tid) + offsetz;
+    }
+    else
+    {
+        x = GetActorX(tid) + FixedMul(cos(refAngle), offsetfw);
+        y = GetActorY(tid) + FixedMul(sin(refAngle), offsetside);
+        z = GetActorZ(tid) + offsetz;
+    }
+
+    SpawnForced("PTrace_Helper", x, y, z, helperTID, 0);
+    if(flags & PTRF_THRUSPECIES)
+        SetActorProperty(helperTID, APROP_Species, GetActorProperty(tid, APROP_Species));
+
+    LineAttack(tid, angle, pitch, 0, "PTrace_Puff", "None", distance, FHF_NORANDOMPUFFZ|FHF_NOIMPACTDECAL);
+
+    // Do a second trace to get the coordinates (yes this could be done with pure math but might as well let the engine do it for max accuracy)
+    if(PTrace_Data[PTRACE_HIT] == PTRACE_HIT_NONE)
+        LineAttack(tid, angle, pitch, 0, "PTrace_Puff_Air", "None", distance, FHF_NORANDOMPUFFZ|FHF_NOIMPACTDECAL);
+    Log(s:"Done with shots");
+
+    Thing_Remove(helperTID);
+
+    __PTrace_SetShootable(tid, oldShootable);
+}
+
+Script "checktrace" (void)
+{
+    Log(s:"PTrace_Data");
+    Log(i:PTrace_Data[PTRACE_HIT]);
+    Log(f:PTrace_Data[PTRACE_POS_X]);
+    Log(f:PTrace_Data[PTRACE_POS_Y]);
+    Log(f:PTrace_Data[PTRACE_POS_Z]);
+    Log(i:PTrace_Data[PTRACE_ACTOR_HIT]);
+    Log(f:PTrace_Data[PTRACE_DISTANCE]);
+}

@@ -1,0 +1,33 @@
+// zt-bcc header
+#linklibrary "ptrace"
+
+strict namespace {
+
+enum
+{
+    PTRACE_HIT_NONE,
+    PTRACE_HIT_MAP,
+    PTRACE_HIT_ACTOR,
+    PTRACE_HIT_TOTAL
+};
+
+enum
+{
+    PTRF_ABSPOSITION = 1,
+    PTRF_ABSOFFSET = 2,
+    PTRF_THRUSPECIES = 4
+};
+
+struct PTrace_DataT
+{
+    int hitType;
+    fixed posX;
+    fixed posY;
+    fixed posZ;
+    int hitActor;
+    fixed distance;
+} PTrace_Data;
+
+extern void PTrace (int tid, fixed angle, fixed distance, fixed pitch, int flags = 0, fixed offsetz = 0.0, fixed offsetfw = 0.0, fixed offsetside = 0.0);
+
+}
