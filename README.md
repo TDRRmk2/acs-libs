@@ -1,5 +1,19 @@
 # acs-libs
-A collection of Zandronum ACS libraries. Some
+A collection of Zandronum ACS libraries.
+
+## rt_iter
+RadiusThingIterator. Much like ZScript's `BlockThingsIterator` this set of functions allows iterating through multiple actors in a radius around a reference actor or a point in space.
+`RadiusThingIterator_Create` will set up the interator with the specified reference actor (or point if using `RadiusThingIterator_CreateFromPos`), and from then on you can call `RadiusThingIterator_Next` in a while loop to set the activator to the next actor found within the range and with the specified flags. Once iteration is done (or `RadiusThingIterator_Destroy` is called), the next function will return `false` and automatically restore the original script activator (if any).
+```
+RadiusThingIterator_Create(0, 256.0, RTIF_MONSTERS|RTIF_NOSIGHT|RTIF_CUBE);
+
+while(RadiusThingIterator_Next())
+{
+	SetActorVelocity(0, 0.0, 0.0, 16.0, true, false);
+}
+```
+Headers are available for both BCS and C, featuring proper type support.
+Note that `RadiusThingIterator_Create` must be followed by either a completed iteration with `RadiusThingIterator_Next` or an explicit termination with `RadiusThingIterator_Destroy`, without any `Delay`s in between or any call to `RadiusThingIterator_Create` again.
 
 ## ptrace
 A pseudo-linetrace library. Much like ZScript's `linetrace` or QuakeC's `trace`, allows tracing a hitscan line, and get information about it. Things like where the trace ended (can be in mid-air, even), if it hit anything, the total distance between the start and end of the trace and a temporary (1-tic) TID to whatever actor it hit, if any.
