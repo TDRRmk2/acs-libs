@@ -1,4 +1,8 @@
 // zt-bcc header
+#ifdef __IMPORTED__
+#error You must #include this header.
+#endif
+
 #linklibrary "ptrace"
 
 strict namespace {

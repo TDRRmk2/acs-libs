@@ -1,5 +1,5 @@
 #ifdef __IMPORTED__
-	#error This file must be #included.
+#error You must #include this header.
 #endif
 
 #linklibrary "paketlib"
