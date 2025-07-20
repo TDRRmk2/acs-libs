@@ -1,0 +1,36 @@
+Actor RadiusThingIterator_Item : CustomInventory
+{
+    +INVENTORY.AUTOACTIVATE
+
+    states
+    {
+    Use:
+        TNT1 A 0 ACS_NamedExecuteWithResult("__RTI_Item_Handler")
+        Stop
+    }
+}
+
+Actor RadiusThingIterator_Giver : RadiusThingIterator_Item
+{
+    states
+    {
+    Use:
+        TNT1 A 0 A_RadiusGive("RadiusThingIterator_Item", reactiontime / 65536.0, accuracy)
+        Stop
+    }
+}
+
+Actor RadiusThingIterator_Helper : RadiusThingIterator_Item
+{
+    +NOINTERACTION
+    +NOBLOCKMAP
+    +INVISIBLE
+    RenderStyle None
+
+    states
+    {
+    Spawn:
+        TNT1 A -1
+        Stop
+    }
+}

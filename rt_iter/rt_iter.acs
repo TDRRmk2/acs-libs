@@ -1,0 +1,112 @@
+#library "rd_iter"
+#include "zcommon.acs"
+
+#define RTI_MAX_THINGS 2048
+
+#define RTI_NEWTID 0
+#define RTI_OLDTID 1 // first two used for __RTI_Things as well
+#define RTI_HELPERTID 2
+#define RTI_CURRENT 3
+#define RTI_THINGCOUNT 4
+#define RTI_SIZEOF 5
+
+#libdefine RTIF_PLAYERS     2
+#libdefine RTIF_MONSTERS    4
+#libdefine RTIF_OBJECTS     8
+#libdefine RTIF_VOODOO      16
+#libdefine RTIF_CORPSES     32
+#libdefine RTIF_NOTARGET    64
+#libdefine RTIF_NOTRACER    128
+#libdefine RTIF_NOMASTER    256
+#libdefine RTIF_CUBE        512
+#libdefine RTIF_NOSIGHT     1024
+#libdefine RTIF_MISSILES    2048
+
+int __RTI_PrivateVars[RTI_SIZEOF];
+int __RTI_Things[RTI_MAX_THINGS][2];
+
+function void RadiusThingIterator_Create (int tid, int radius, int flags)
+{
+    int oldAccuracy = GetActorProperty(tid, APROP_Accuracy), oldReactionTime = GetActorProperty(tid, APROP_ReactionTime);
+
+    if(ClassifyActor(0) != ACTOR_WORLD)
+    {
+        __RTI_PrivateVars[RTI_OLDTID] = ActivatorTID();
+        __RTI_PrivateVars[RTI_NEWTID] = UniqueTID();
+        Thing_ChangeTID(0, __RTI_PrivateVars[RTI_NEWTID]);
+    }
+
+    SetActorProperty(tid, APROP_Accuracy, flags);
+    SetActorProperty(tid, APROP_ReactionTime, radius);
+
+    if(tid)
+        GiveActorInventory(tid, "RadiusThingIterator_Giver", 1);
+    else
+        GiveInventory("RadiusThingIterator_Giver", 1);
+
+    SetActorProperty(tid, APROP_Accuracy, oldAccuracy);
+    SetActorProperty(tid, APROP_ReactionTime, oldReactionTime);
+
+    __RTI_PrivateVars[RTI_HELPERTID] = 0;
+}
+
+function void RadiusThingIterator_CreateFromPos (int x, int y, int z, int radius, int flags)
+{
+    int tid = UniqueTID();
+
+    SpawnForced("RadiusThingIterator_Helper", x, y, z, tid, 0.0);
+    RadiusThingIterator_Create(tid, radius, flags);
+
+    __RTI_PrivateVars[RTI_HELPERTID] = tid;
+}
+
+function void RadiusThingIterator_Destroy (void)
+{
+    int i;
+
+    if(__RTI_PrivateVars[RTI_HELPERTID])
+        Thing_Remove(__RTI_PrivateVars[RTI_HELPERTID]);
+
+    if(__RTI_PrivateVars[RTI_NEWTID])
+    {
+        if(SetActivator(__RTI_PrivateVars[RTI_NEWTID]))
+            Thing_ChangeTID(0, __RTI_PrivateVars[RTI_OLDTID]);
+    }
+
+    for(i = __RTI_PrivateVars[RTI_THINGCOUNT] - 1; i >= 0; i--)
+        Thing_ChangeTID(__RTI_Things[i][RTI_NEWTID], __RTI_Things[i][RTI_OLDTID]);
+
+    for(i = 0; i < RTI_SIZEOF; i++)
+        __RTI_PrivateVars[i] = 0;
+}
+
+function bool RadiusThingIterator_Next (void)
+{
+    int curr = __RTI_PrivateVars[RTI_CURRENT]++;
+
+    if(curr >= __RTI_PrivateVars[RTI_THINGCOUNT])
+    {
+        RadiusThingIterator_Destroy();
+        return false;
+    }
+
+    return SetActivator(__RTI_Things[curr][RTI_NEWTID]);
+}
+
+Script "__RTI_Item_Handler" (void)
+{
+    int tc = __RTI_PrivateVars[RTI_THINGCOUNT];
+
+    if(tc >= RTI_MAX_THINGS)
+        terminate;
+
+    int tid = UniqueTID();
+    __RTI_Things[tc][RTI_OLDTID] = ActivatorTID();
+    __RTI_Things[tc][RTI_NEWTID] = tid;
+    Thing_ChangeTID(0, tid);
+
+    if(__RTI_PrivateVars[RTI_THINGCOUNT]++ >= RTI_MAX_THINGS)
+    {
+        Log(s:"RadiusThingIterator ERROR: Max thing limit (", i:RTI_MAX_THINGS, s:") reached! No more things will be iterated through.");
+    }
+}

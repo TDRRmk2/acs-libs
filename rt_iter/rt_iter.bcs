@@ -1,0 +1,27 @@
+#ifdef __IMPORTED__
+#error You must #include this header.
+#endif
+
+#linklibrary "rt_iter"
+
+enum
+{
+    RTIF_PLAYERS =     2,
+    RTIF_MONSTERS =    4,
+    RTIF_OBJECTS =     8,
+    RTIF_VOODOO =      16,
+    RTIF_CORPSES =     32,
+    RTIF_NOTARGET =    64,
+    RTIF_NOTRACER =    128,
+    RTIF_NOMASTER =    256,
+    RTIF_CUBE =        512,
+    RTIF_NOSIGHT =     1024,
+    RTIF_MISSILES =    2048
+};
+
+extern void RadiusThingIterator_Create (int tid, fixed radius, int flags);
+extern void RadiusThingIterator_CreateFromPos (fixed x, fixed y, fixed z, fixed radius, int flags);
+extern void RadiusThingIterator_Destroy (void);
+extern bool RadiusThingIterator_Next (void);
+
+#endif
