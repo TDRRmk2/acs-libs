@@ -16,6 +16,7 @@ Headers are available for both BCS and C, featuring proper type support.
 Note that `RadiusThingIterator_Create` must be followed by either a completed iteration with `RadiusThingIterator_Next` or an explicit termination with `RadiusThingIterator_Destroy`, without any `Delay`s in between or any call to `RadiusThingIterator_Create` again.
 
 ## ptrace
+### NOTE: decorate.ptrace is required for proper functionality.
 A pseudo-linetrace library. Much like ZScript's `linetrace` or QuakeC's `trace`, allows tracing a hitscan line, and get information about it. Things like where the trace ended (can be in mid-air, even), if it hit anything, the total distance between the start and end of the trace and a temporary (1-tic) TID to whatever actor it hit, if any.
 All information is returned in `PTrace_Data` after calling the `PTrace` function. In ACC, it's accessed as follows:
 ```
