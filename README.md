@@ -2,6 +2,7 @@
 A collection of Zandronum ACS libraries.
 
 ## rt_iter
+### NOTE: decorate.rt_iter is required for proper functionality.
 RadiusThingIterator. Much like ZScript's `BlockThingsIterator` this set of functions allows iterating through multiple actors in a radius around a reference actor or a point in space.
 `RadiusThingIterator_Create` will set up the interator with the specified reference actor (or point if using `RadiusThingIterator_CreateFromPos`), and from then on you can call `RadiusThingIterator_Next` in a while loop to set the activator to the next actor found within the range and with the specified flags. Once iteration is done (or `RadiusThingIterator_Destroy` is called), the next function will return `false` and automatically restore the original script activator (if any).
 ```
