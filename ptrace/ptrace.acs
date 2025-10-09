@@ -72,7 +72,7 @@ Script "__PTrace_Puff_Handler" (int type)
 
         Delay(const:1);
 
-        Thing_ChangeTID(0, oldTID);
+        Thing_ChangeTID(tid, oldTID);
     }
     else
     {
