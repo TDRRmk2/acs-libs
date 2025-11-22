@@ -33,7 +33,7 @@ typedef struct
 
     __prop getUserVar {operator(): ACS_GetUserVariable(->tid, ...)}
     __prop getUserArray {operator(): ACS_GetUserArray(->tid, ...)}
-    __prop damage {operator(): ACS_DamageActor(->tid, ...)}
+    __prop doDamage {operator(): ACS_DamageActor(->tid, ...)}
     __prop morph {operator(): ACS_MorphActor(->tid, ...)}
     __prop unmorph {operator(): ACS_UnMorphActor(->tid, ...)}
     __prop pickActor {operator(): ACS_PickActor(->tid, ...)}
