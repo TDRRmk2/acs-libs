@@ -11,18 +11,18 @@ union intandfix
     __str s;
 }
 
-[[call("StkCall"), optional_args(1)]]
-__str Packet_AppendFixed (__str pac, __fixed val, int width)
+[[call("StkCall")]]
+__str Packet_AppendFixed (__str pac, __fixed val)
 {
     union intandfix u = { .f = val };
 
-    return Packet_Append(pac, val.i, width);
+    return Packet_Append(pac, u.i);
 }
 
-[[call("StkCall"), optional_args(1)]]
-__str Packet_ReadFixed (__str pac, int width)
+[[call("StkCall")]]
+__str Packet_ReadFixed (__str pac)
 {
-    pac =  Packet_Read(pac, width);
+    pac =  Packet_Read(pac);
     union intandfix u = { .i = Packet_Rval };
 
     Packet_RvalFixed = u.f;
@@ -39,4 +39,20 @@ __str __Packet_ReadStr_C (__str pac)
     Packet_RvalStr = u.s;
 
     return pac;
+}
+
+[[call("StkCall")]]
+int Packet_PackValueFixed(int pack, int pos, int width, __fixed v)
+{
+    union intandfix u = { .f = v };
+
+    return Packet_PackValueFixed(pack, pos, width, u.i);
+}
+
+[[call("StkCall"), optional_args(1)]]
+__fixed Packet_UnpackValueFixed(int pack, int pos, int width, bool sign)
+{
+    union intandfix u = { .i = Packet_UnpackValueFixed(pack, pos, width, sign) };
+
+    return u.f;
 }
